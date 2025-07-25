@@ -13,13 +13,6 @@ jugadores = []
 partidos = []
 
 
-def limpiar_pantalla():
-    os.system('cls' if os.name == 'nt' else 'clear')
-
-def pausar():
-    input("Presione Enter para continuar...")
-    limpiar_pantalla()
-
 def agregar_equipo():
     limpiar_pantalla()
     nombre = input("Nombre del equipo: ")
@@ -145,9 +138,9 @@ def mostrar_jugadores():
 def main():
     while True:
         limpiar_pantalla()
-        print("=== MENÚ PRINCIPAL ===")
-        print("1. Agregar equipo")
-        print("2. Agregar jugador")
+        print("=== MENÚ PRINCIPAL DE TORNEOS ===")
+        print("1. Administrar equipo")
+        print("2. Administrar jugador")
         print("3. Registrar partido")
         print("4. Mostrar estadísticas de equipos")
         print("5. Mostrar partidos jugados")
