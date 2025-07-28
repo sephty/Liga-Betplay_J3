@@ -1,58 +1,61 @@
 import json
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Union
 
 
-
-
-def readJson(path)->Dict:
+def read_json(path: str) -> Union[Dict, List]:
     try:
-        with open(path, "r", encoding="utf-8") as cf:
-            return json.load(cf)
+        with open(path, "r", encoding="utf-8") as file:
+            return json.load(file)
     except (FileNotFoundError, json.JSONDecodeError):
-        return {}
+        return {} if path.endswith(".json") else []
 
-def writeJson(path, data : Dict)->Dict:
-    with open(path, "w", encoding="utf-8") as cf:
-        json.dump(data, cf, indent=4)
+def write_json(path: str, data: Union[Dict, List]) -> None:
+    with open(path, "w", encoding="utf-8") as file:
+        json.dump(data, file, indent=4)
 
-def updateJson(path, data : Dict, keys: Optional[List[str]] = None) -> None:
-    currentData = readJson()
+def update_json(path: str, new_data: Dict, keys: Optional[List[str]] = None) -> None:
+    data = read_json(path)
+
+    if not isinstance(data, dict):
+        raise ValueError("Solo se puede actualizar archivos JSON")
 
     if not keys:
-        currentData.update(data)
+        data.update(new_data)
     else:
-        current = currentData
+        current = data
         for key in keys[:-1]:
             current = current.setdefault(key, {})
-        if keys:
-            current.setdefault(keys[-1], {}).update(data)
-    
-    writeJson(currentData)
+        current.setdefault(keys[-1], {}).update(new_data)
 
-def deleteJson(path: List[str])->bool:
-    data = readJson()
+    write_json(path, data)
+
+
+def delete_json_key(path: str, keys: List[str]) -> bool:
+    data = read_json(path)
     if not data:
         return False
-    
+
     current = data
-    for key in path[:-1]:
+    for key in keys[:-1]:
         if key not in current:
             return False
         current = current[key]
-    
-    if path and path[-1] in current:
-        del current[path[-1]]
-        writeJson(data)
+
+    if keys[-1] in current:
+        del current[keys[-1]]
+        write_json(path, data)
         return True
+
     return False
 
-def initializeJson(initialStructure:Dict)->None:
-    if not os.path.isfile(DB_FILE):
-        writeJson(initialStructure)
+def initialize_json(path: str, initial_structure: Union[Dict, List]) -> None:
+    if not os.path.isfile(path):
+        write_json(path, initial_structure)
     else:
-        currentData = readJson()
-        for key, value in initialStructure.items():
-            if key not in currentData:
-                currentData[key] = value
-        writeJson(currentData)
+        current_data = read_json(path)
+        if isinstance(current_data, dict) and isinstance(initial_structure, dict):
+            for key, value in initial_structure.items():
+                if key not in current_data:
+                    current_data[key] = value
+            write_json(path, current_data)
